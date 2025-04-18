@@ -181,11 +181,13 @@ document.addEventListener('DOMContentLoaded', () => {
 	} else {
 		 console.error("Element with ID 'user-info-username' not found.");
 	}
+	console.log("Attempting to update pointsDisplay. currentPoints is:", currentPoints); // THÊM LOG NÀY
 	if (pointsDisplay) {
 		 pointsDisplay.textContent = `${currentPoints} điểm`;
 	} else {
 		 console.error("Element with ID 'user-info-points' not found.");
 	}
+	console.log("Attempting to check points for disabling button. currentPoints is:", currentPoints); // THÊM LOG NÀY
 	if (currentPoints <= 0) {
         if(shootButton) shootButton.disabled = true;
         console.log("Initial points are 0. KICK button disabled.");
