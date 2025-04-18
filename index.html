@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Penalty Shoot-Out</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Ảnh nền chính bao gồm mọi thứ tĩnh -->
+        <img src="images/background-game.png" alt="Penalty Shootout Background" class="background-image">
+		<!-- Chữ LOADING... (ban đầu ẩn) -->
+        <div id="loading-text" class="loading-indicator hidden">LOADING...</div>
+
+        <!-- Vùng hiển thị lỗi (ban đầu ẩn) -->
+        <div id="error-display" class="error-message hidden"></div>
+        <!-- Các điểm nóng cho 5 bóng mục tiêu (ban đầu ẩn) -->
+        <div class="target-ball" id="ball-1"><span class="percentage"></span></div>
+        <div class="target-ball" id="ball-2"><span class="percentage"></span></div>
+        <div class="target-ball" id="ball-3"><span class="percentage"></span></div>
+        <div class="target-ball" id="ball-4"><span class="percentage"></span></div>
+        <div class="target-ball" id="ball-5"><span class="percentage"></span></div>
+
+        <!-- Nút bấm vô hình đặt lên trên quả bóng trắng ở dưới -->
+        <button id="shoot-button" class="shoot-hotspot">KICK</button>
+
+    </div>
+
+    <script src="script.js"></script>
+	<!-- THÊM NHẠC NỀN Ở ĐÂY -->
+    <audio id="background-music" src="sounds/background.mp3" loop></audio>
+    <!--
+        - id="background-music": Để JS có thể tìm thấy
+        - src="sounds/background.mp3": Đường dẫn tới file nhạc nền
+        - loop: Tự động lặp lại khi phát hết
+    -->
+</body>
+</html>
