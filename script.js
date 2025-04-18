@@ -20,10 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const backgroundMusic = document.getElementById('background-music');
     console.log("DOM Elements selected.");
 	
-	const urlParams = new URLSearchParams(window.location.search);
-	const userId = urlParams.get('userId');
-	const username = urlParams.get('username'); // Đã được decode tự động bởi get()
-	currentPoints = parseInt(urlParams.get('points')) || 0; // Chuyển sang số, mặc định là 0
+	
 
     // --- Biến lưu trữ cấu hình và trạng thái game ---
     let appConfig = null;
@@ -32,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	let finalTargetPercentages = []; // Mảng lưu trữ % mục tiêu cuối cùng
 	let hasUserInteracted = false; // *** THÊM BIẾN CỜ ***
 	let currentPoints = 0; // <<< KHAI BÁO currentPoints ở phạm vi ngoài
+	
     const effectDuration = 5000; // Thời gian hiển thị "Phân tích..." (5 giây)
     const intervalTime = 100;    // Thời gian cập nhật % (100ms)
     const highlightDelay = 300;  // Độ trễ trước khi highlight bóng thắng (ms)
@@ -101,25 +99,8 @@ document.addEventListener('DOMContentLoaded', () => {
 	console.log("User data from URL:", { userId, username, currentPoints });
 	// Cập nhật hiển thị
     // Cập nhật hiển thị
-	if (usernameDisplay) {
-		 // DecodeURIComponent là không cần thiết nếu dùng urlParams.get()
-		 usernameDisplay.textContent = username || 'DEMO';
-	} else {
-		 console.error("Element with ID 'user-info-username' not found.");
-	}
-	if (pointsDisplay) {
-		 pointsDisplay.textContent = `${currentPoints} điểm`;
-	} else {
-		 console.error("Element with ID 'user-info-points' not found.");
-	}
-	if (currentPoints <= 0) {
-        if(shootButton) shootButton.disabled = true;
-        console.log("Initial points are 0. KICK button disabled.");
-        // Có thể hiển thị thông báo ban đầu nếu muốn
-        showError("Bạn đã hết điểm. Vui lòng quay lại bot.");
-    } else {
-         if(shootButton) shootButton.disabled = false;
-    }
+	
+	
     // --- Hàm tính toán vị trí (giữ nguyên) ---
     function calculatePositions() {
         if (!appConfig || !appConfig.coordinates) {
@@ -186,9 +167,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Gọi hàm tải cấu hình (giữ nguyên) ---
     loadConfig();
-
-    // --- Logic Game ---
-
+	
+	// *** 2. LẤY THAM SỐ VÀ GÁN GIÁ TRỊ CHO currentPoints ***
+	const urlParams = new URLSearchParams(window.location.search);
+	const userId = urlParams.get('userId');
+	const username = urlParams.get('username'); // Đã được decode tự động bởi get()
+	currentPoints = parseInt(urlParams.get('points')) || 0; // Chuyển sang số, mặc định là 0
+	console.log("URL Params Received:", { userId, username, points: urlParams.get('points') });
+    console.log("Parsed User Data:", { userId, username, currentPoints });
+    if (usernameDisplay) {
+		 // DecodeURIComponent là không cần thiết nếu dùng urlParams.get()
+		 usernameDisplay.textContent = username || 'DEMO';
+	} else {
+		 console.error("Element with ID 'user-info-username' not found.");
+	}
+	if (pointsDisplay) {
+		 pointsDisplay.textContent = `${currentPoints} điểm`;
+	} else {
+		 console.error("Element with ID 'user-info-points' not found.");
+	}
+	if (currentPoints <= 0) {
+        if(shootButton) shootButton.disabled = true;
+        console.log("Initial points are 0. KICK button disabled.");
+        // Có thể hiển thị thông báo ban đầu nếu muốn
+        showError("Bạn đã hết điểm. Vui lòng quay lại bot.");
+    } else {
+         if(shootButton) shootButton.disabled = false;
+    }
     // Hàm tính toán và điều chỉnh tỷ lệ % TRƯỚC KHI animation bắt đầu
     function calculateAndAdjustPercentages() {
         console.log("Calculating and adjusting target percentages...");
