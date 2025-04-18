@@ -19,6 +19,11 @@ document.addEventListener('DOMContentLoaded', () => {
 	// *** THÊM: Lấy element nhạc nền ***
     const backgroundMusic = document.getElementById('background-music');
     console.log("DOM Elements selected.");
+	
+	const urlParams = new URLSearchParams(window.location.search);
+	const userId = urlParams.get('userId');
+	const username = urlParams.get('username'); // Đã được decode tự động bởi get()
+	let currentPoints = parseInt(urlParams.get('points')) || 0; // Chuyển sang số, mặc định là 0
 
     // --- Biến lưu trữ cấu hình và trạng thái game ---
     let appConfig = null;
@@ -48,6 +53,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Không cần chặn game nếu chỉ là lỗi âm thanh
     }
     // *** KẾT THÚC THÊM ***
+	
+	
+	console.log("URL Params Received:", { userId, username, points: urlParams.get('points') }); // Log để kiểm tra
+	console.log("Parsed User Data:", { userId, username, currentPoints });
+
     // --- Hàm tải cấu hình (SỬA ĐỔI ĐỂ PHÁT NHẠC NỀN) ---
     async function loadConfig() {
         console.log("Attempting to load config_webapp.json...");
@@ -89,8 +99,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 	console.log("User data from URL:", { userId, username, currentPoints });
 	// Cập nhật hiển thị
-    if (usernameDisplay) usernameDisplay.textContent = username || 'N/A'; // Hiển thị username
-    if (pointsDisplay) pointsDisplay.textContent = `${currentPoints} điểm`; // Hiển thị điểm
+    // Cập nhật hiển thị
+	if (usernameDisplay) {
+		 // DecodeURIComponent là không cần thiết nếu dùng urlParams.get()
+		 usernameDisplay.textContent = username || 'N/A';
+	} else {
+		 console.error("Element with ID 'user-info-username' not found.");
+	}
+	if (pointsDisplay) {
+		 pointsDisplay.textContent = `${currentPoints} điểm`;
+	} else {
+		 console.error("Element with ID 'user-info-points' not found.");
+	}
 	if (currentPoints <= 0) {
     shootButton.disabled = true;
     console.log("User has 0 points initially. KICK button disabled.");
