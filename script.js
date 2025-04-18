@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("Telegram WebApp SDK Initialized.");
 
     // --- Lấy các element DOM cần thiết ---
+	const usernameDisplay = document.getElementById('user-info-username');
+    const pointsDisplay = document.getElementById('user-info-points');
     const gameContainer = document.querySelector('.game-container');
     const backgroundImage = document.querySelector('.background-image');
     const targetBalls = document.querySelectorAll('.target-ball');
@@ -85,7 +87,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (shootButton) shootButton.disabled = true;
         }
     }
-
+	console.log("User data from URL:", { userId, username, currentPoints });
+	// Cập nhật hiển thị
+    if (usernameDisplay) usernameDisplay.textContent = username || 'N/A'; // Hiển thị username
+    if (pointsDisplay) pointsDisplay.textContent = `${currentPoints} điểm`; // Hiển thị điểm
+	if (currentPoints <= 0) {
+    shootButton.disabled = true;
+    console.log("User has 0 points initially. KICK button disabled.");
+    // Có thể hiển thị thông báo nhỏ gần nút kick nếu muốn
+    // showError("Hết điểm. Vui lòng nạp thêm."); // Hoặc dùng element khác
+	} else {
+		shootButton.disabled = false; // Đảm bảo nút được bật nếu có điểm
+	}
     // --- Hàm tính toán vị trí (giữ nguyên) ---
     function calculatePositions() {
         if (!appConfig || !appConfig.coordinates) {
@@ -193,6 +206,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Xử lý khi nhấn nút KICK
     shootButton.addEventListener('click', () => {
         console.log("KICK button clicked.");
+		// *** THÊM KIỂM TRA DISABLED ***
+		if (shootButton.disabled) {
+			 showError("Bạn đã hết điểm. Vui lòng quay lại bot và xác nhận đã nạp.");
+			 console.log("KICK clicked but button is disabled (0 points).");
+			 return; // Ngăn không chạy tiếp
+		}
+		// *** KẾT THÚC KIỂM TRA ***
         if (!appConfig) { showError("Cấu hình chưa sẵn sàng, vui lòng đợi giây lát."); return; }
         if (isProcessing) { console.log("Already processing."); return; }
 
@@ -364,6 +384,14 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Error sending data via Telegram.sendData:", error);
             showError("Lỗi gửi kết quả về máy chủ.");
         }
+		if (currentPoints > 0) {
+			currentPoints--; // Giảm bộ đếm điểm cục bộ
+			if (pointsDisplay) pointsDisplay.textContent = `${currentPoints} điểm`;
+			if (currentPoints <= 0) {
+				shootButton.disabled = true; // Vô hiệu hóa nếu hết điểm
+				console.log("Points reached 0 after kick. KICK button disabled.");
+			}
+		}
         // Reset trạng thái cho lượt chơi tiếp theo
         resetForNextRound();
     }

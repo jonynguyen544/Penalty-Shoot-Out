@@ -64,7 +64,19 @@ body {
     border-radius: 3px;
     white-space: nowrap; /* Không xuống dòng */
 }
-
+.user-info-bar {
+    position: absolute;
+    top: 10px; /* Hoặc vị trí khác */
+    left: 10px; /* Hoặc căn giữa */
+    /* transform: translateX(-50%); */ /* Nếu căn giữa */
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    z-index: 20;
+    white-space: nowrap;
+}
 .shoot-hotspot {
     position: absolute; /* Bắt buộc để JS set left/top/width/height */
     border-radius: 50%;
