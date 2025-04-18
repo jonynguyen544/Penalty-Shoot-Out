@@ -66,15 +66,15 @@ body {
 }
 .user-info-bar {
     position: absolute;
-    top: 10px; /* Hoặc vị trí khác */
-    left: 10px; /* Hoặc căn giữa */
+    top: 100px; /* Hoặc vị trí khác */
+    left: 100px; /* Hoặc căn giữa */
     /* transform: translateX(-50%); */ /* Nếu căn giữa */
     background-color: rgba(0, 0, 0, 0.6);
     color: white;
     padding: 5px 10px;
-    border-radius: 5px;
-    font-size: 12px;
-    z-index: 20;
+    border-radius: 25px;
+    font-size: 25px;
+    z-index: 40;
     white-space: nowrap;
 }
 .shoot-hotspot {
