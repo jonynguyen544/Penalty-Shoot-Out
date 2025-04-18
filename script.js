@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	const urlParams = new URLSearchParams(window.location.search);
 	const userId = urlParams.get('userId');
 	const username = urlParams.get('username'); // Đã được decode tự động bởi get()
-	let currentPoints = parseInt(urlParams.get('points')) || 0; // Chuyển sang số, mặc định là 0
+	currentPoints = parseInt(urlParams.get('points')) || 0; // Chuyển sang số, mặc định là 0
 
     // --- Biến lưu trữ cấu hình và trạng thái game ---
     let appConfig = null;
@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let effectInterval = null;
 	let finalTargetPercentages = []; // Mảng lưu trữ % mục tiêu cuối cùng
 	let hasUserInteracted = false; // *** THÊM BIẾN CỜ ***
+	let currentPoints = 0; // <<< KHAI BÁO currentPoints ở phạm vi ngoài
     const effectDuration = 5000; // Thời gian hiển thị "Phân tích..." (5 giây)
     const intervalTime = 100;    // Thời gian cập nhật % (100ms)
     const highlightDelay = 300;  // Độ trễ trước khi highlight bóng thắng (ms)
@@ -102,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Cập nhật hiển thị
 	if (usernameDisplay) {
 		 // DecodeURIComponent là không cần thiết nếu dùng urlParams.get()
-		 usernameDisplay.textContent = username || 'N/A';
+		 usernameDisplay.textContent = username || 'DEMO';
 	} else {
 		 console.error("Element with ID 'user-info-username' not found.");
 	}
@@ -112,13 +113,13 @@ document.addEventListener('DOMContentLoaded', () => {
 		 console.error("Element with ID 'user-info-points' not found.");
 	}
 	if (currentPoints <= 0) {
-    shootButton.disabled = true;
-    console.log("User has 0 points initially. KICK button disabled.");
-    // Có thể hiển thị thông báo nhỏ gần nút kick nếu muốn
-    // showError("Hết điểm. Vui lòng nạp thêm."); // Hoặc dùng element khác
-	} else {
-		shootButton.disabled = false; // Đảm bảo nút được bật nếu có điểm
-	}
+        if(shootButton) shootButton.disabled = true;
+        console.log("Initial points are 0. KICK button disabled.");
+        // Có thể hiển thị thông báo ban đầu nếu muốn
+        showError("Bạn đã hết điểm. Vui lòng quay lại bot.");
+    } else {
+         if(shootButton) shootButton.disabled = false;
+    }
     // --- Hàm tính toán vị trí (giữ nguyên) ---
     function calculatePositions() {
         if (!appConfig || !appConfig.coordinates) {
@@ -226,13 +227,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Xử lý khi nhấn nút KICK
     shootButton.addEventListener('click', () => {
         console.log("KICK button clicked.");
-		// *** THÊM KIỂM TRA DISABLED ***
-		if (shootButton.disabled) {
-			 showError("Bạn đã hết điểm. Vui lòng quay lại bot và xác nhận đã nạp.");
-			 console.log("KICK clicked but button is disabled (0 points).");
-			 return; // Ngăn không chạy tiếp
-		}
-		// *** KẾT THÚC KIỂM TRA ***
+		// *** KIỂM TRA ĐIỂM ĐẦU TIÊN ***
+        if (currentPoints <= 0) {
+             showError("Bạn đã hết điểm. Vui lòng quay lại bot và xác nhận đã nạp.");
+             console.log("KICK clicked but points are 0.");
+             // Đảm bảo nút bị vô hiệu hóa
+             if(shootButton) shootButton.disabled = true;
+             return; // Không làm gì cả
+        }
+        // *** KẾT THÚC KIỂM TRA ĐIỂM ***
+
         if (!appConfig) { showError("Cấu hình chưa sẵn sàng, vui lòng đợi giây lát."); return; }
         if (isProcessing) { console.log("Already processing."); return; }
 
@@ -388,8 +392,11 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             console.error("Could not determine winning ball index from final targets!");
             showError("Lỗi xác định kết quả cuối cùng.");
+			resetForNextRound(false); // Gọi reset nhưng không giảm điểm
+            return; // Dừng lại
         }
         // Hàm này KHÔNG gọi reset hay sendData
+		sendDataAndResetState();
     }
 
     // **HÀM MỚI**: Gửi data và reset trạng thái
@@ -403,33 +410,35 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error("Error sending data via Telegram.sendData:", error);
             showError("Lỗi gửi kết quả về máy chủ.");
+			resetForNextRound(false); // Gọi reset nhưng không giảm điểm (vì chưa chắc bot đã trừ)
         }
 		if (currentPoints > 0) {
 			currentPoints--; // Giảm bộ đếm điểm cục bộ
 			if (pointsDisplay) pointsDisplay.textContent = `${currentPoints} điểm`;
 			if (currentPoints <= 0) {
-				shootButton.disabled = true; // Vô hiệu hóa nếu hết điểm
-				console.log("Points reached 0 after kick. KICK button disabled.");
-			}
+                if(shootButton) shootButton.disabled = true; // Vô hiệu hóa nếu hết điểm
+                console.log("Points reached 0 after kick. KICK button disabled.");
+                showError("Bạn đã hết điểm. Vui lòng quay lại bot."); // Thông báo hết điểm
+            }
 		}
         // Reset trạng thái cho lượt chơi tiếp theo
-        resetForNextRound();
+        resetForNextRound(true);
     }
 
     // --- Hàm Reset cho lượt chơi tiếp theo ---
-    // Chỉ ẩn loading, kích hoạt nút, reset cờ isProcessing
-    function resetForNextRound() {
-        console.log("Resetting state for next round...");
-        loadingText.classList.add('hidden'); // Ẩn "Phân tích..."
-        if(shootButton) { // Kiểm tra nút có tồn tại không
-           shootButton.disabled = false;       // Kích hoạt lại nút KICK
-		   // *** THÊM: Xóa class để chữ KICK hiện rõ lại ***
-           shootButton.classList.remove('kicking');
-           // *** KẾT THÚC THÊM ***
+    // Thêm tham số để biết có cần bật nút không (nếu điểm > 0)
+    function resetForNextRound(kickSuccessful) {
+        console.log(`Resetting state for next round. Kick successful: ${kickSuccessful}`);
+        loadingText.classList.add('hidden');
+        // Chỉ bật lại nút nếu lượt kick thành công VÀ điểm còn > 0
+        if (kickSuccessful && currentPoints > 0 && shootButton) {
+           shootButton.disabled = false;
+        } else if (shootButton) {
+           // Giữ nút disabled nếu kick không thành công hoặc hết điểm
+           shootButton.disabled = true;
         }
-        isProcessing = false;              // Reset cờ trạng thái
-        // KHÔNG reset opacity, %, hay glow của các bóng
-        console.log("State reset complete. Ready for next kick.");
+        isProcessing = false;
+        console.log("State reset complete. Ready for next kick (if points > 0).");
     }
 
     // --- Hàm hiển thị/ẩn lỗi (giữ nguyên) ---
